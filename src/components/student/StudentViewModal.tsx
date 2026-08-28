@@ -48,6 +48,7 @@ import { useThemeContext } from '../../context/ThemeContext';
 import { formatDateDisplay } from '../../utils/dateUtils';
 import { generateStudentPdf } from '../../utils/exportPdf';
 import { CertificateItem, StudentRecord } from '../../types';
+import { resolveFileUrl, downloadFile } from '../../api/client';
 
 // Helper component for styled read-only field boxes
 const DetailField: React.FC<{
@@ -191,7 +192,11 @@ export const StudentViewModal: React.FC = () => {
   };
 
   const handleDownloadCert = (cert: CertificateItem) => {
-    showSnackbar(`Downloading ${cert.name} (${cert.fileName || cert.name + '.pdf'})...`);
+    if (typeof cert.file === 'string') {
+      downloadFile(cert.file, cert.fileName).catch(() =>
+        showSnackbar(`Could not download ${cert.name}.`, 'error')
+      );
+    }
   };
 
   // Helper values & defaults for comprehensive display
@@ -960,34 +965,65 @@ export const StudentViewModal: React.FC = () => {
             </IconButton>
           </DialogTitle>
           <DialogContent>
-            <Box
-              sx={{
-                height: 400,
-                borderRadius: '12px',
-                border: `2px dashed ${isDark ? '#334155' : '#CBD5E1'}`,
-                backgroundColor: isDark ? '#0F172A' : '#F1F5F9',
-                display: 'flex',
-                flexDirection: 'column',
-                alignItems: 'center',
-                justifyContent: 'center',
-                gap: 2,
-                p: 3,
-                textAlign: 'center',
-              }}
-            >
-              <FileCheck size={64} color={isDark ? '#38BDF8' : '#0B3D91'} />
-              <Typography variant="h6" sx={{ fontWeight: 700 }}>
-                {previewCert.name}
-              </Typography>
-              <Typography variant="body2" sx={{ color: isDark ? '#94A3B8' : '#64748B' }}>
-                File: {previewCert.fileName || `${previewCert.name.toLowerCase().replace(/[^a-z0-9]/g, '_')}_${appNo}.pdf`}
-              </Typography>
-              <Chip
-                label={previewCert.received ? 'Verified & Received' : 'Not Received'}
-                color={previewCert.received ? 'success' : 'default'}
-                sx={{ fontWeight: 700 }}
-              />
-            </Box>
+            {(() => {
+              const previewUrl =
+                typeof previewCert.file === 'string' ? resolveFileUrl(previewCert.file) : null;
+              const isImage = !!previewUrl && /\.(jpe?g|png)$/i.test(previewUrl);
+              const isPdf = !!previewUrl && /\.pdf$/i.test(previewUrl);
+
+              if (isImage) {
+                return (
+                  <Box sx={{ textAlign: 'center' }}>
+                    <img
+                      src={previewUrl || ''}
+                      alt={previewCert.name}
+                      style={{ maxWidth: '100%', maxHeight: 480, borderRadius: '12px' }}
+                    />
+                  </Box>
+                );
+              }
+              if (isPdf) {
+                return (
+                  <Box sx={{ height: 480 }}>
+                    <iframe
+                      src={previewUrl || ''}
+                      title={previewCert.name}
+                      style={{ width: '100%', height: '100%', border: 'none', borderRadius: '12px' }}
+                    />
+                  </Box>
+                );
+              }
+              return (
+                <Box
+                  sx={{
+                    height: 400,
+                    borderRadius: '12px',
+                    border: `2px dashed ${isDark ? '#334155' : '#CBD5E1'}`,
+                    backgroundColor: isDark ? '#0F172A' : '#F1F5F9',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    gap: 2,
+                    p: 3,
+                    textAlign: 'center',
+                  }}
+                >
+                  <FileCheck size={64} color={isDark ? '#38BDF8' : '#0B3D91'} />
+                  <Typography variant="h6" sx={{ fontWeight: 700 }}>
+                    {previewCert.name}
+                  </Typography>
+                  <Typography variant="body2" sx={{ color: isDark ? '#94A3B8' : '#64748B' }}>
+                    File: {previewCert.fileName || `${previewCert.name.toLowerCase().replace(/[^a-z0-9]/g, '_')}_${appNo}.pdf`}
+                  </Typography>
+                  <Chip
+                    label={previewCert.received ? 'Verified & Received' : 'Not Received'}
+                    color={previewCert.received ? 'success' : 'default'}
+                    sx={{ fontWeight: 700 }}
+                  />
+                </Box>
+              );
+            })()}
           </DialogContent>
           <DialogActions>
             <Button onClick={() => setPreviewCert(null)}>Close</Button>

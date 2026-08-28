@@ -28,3 +28,6 @@ dist-ssr
 
 # Gemini / Antigravity files
 .gemini/
+
+# Uploaded certificate files (stored on the backend server)
+backend/uploads/

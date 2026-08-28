@@ -1,4 +1,5 @@
 import React from 'react';
+import { isFieldFilled, isRequiredField } from './formFocus';
 
 /**
  * Global Enter-Key Navigation Handler for ALL Admission Form Steps.
@@ -8,7 +9,10 @@ import React from 'react';
  * - Skips disabled, hidden, and zero-size elements.
  * - Skips utility buttons, icon buttons, adornments, and dummy autofill inputs.
  * - If a dropdown/select is expanded (aria-expanded="true"), allows Enter to select the option normally.
- * - On the final focusable field, triggers `onFinalSubmit` (runs validation and advances to the next step).
+ * - While the form is incomplete, Enter moves focus to the next field.
+ * - Once every required field is filled, Enter on ANY field validates & submits the step
+ *   (advances to the next page) — even if the cursor is not on the last field.
+ * - On the final focusable field, always triggers `onFinalSubmit` (runs validation and advances).
  *
  * Usage:
  *   <Box component="form" onKeyDown={(e) => handleFormEnterKeyDown(e, handleSubmit(onSubmit))}>
@@ -106,7 +110,18 @@ export const handleFormEnterKeyDown = (
   }
 
   // 8. Navigate
+  const allRequiredFilled =
+    focusableFields.length > 0 &&
+    focusableFields.every((el) => !isRequiredField(el) || isFieldFilled(el));
+
   if (currentIndex >= 0 && currentIndex < focusableFields.length - 1) {
+    if (allRequiredFilled) {
+      // All required fields are complete — Enter anywhere advances to the next page.
+      if (onFinalSubmit) {
+        onFinalSubmit();
+      }
+      return;
+    }
     // Focus the next field
     const nextEl = focusableFields[currentIndex + 1];
     nextEl.focus();

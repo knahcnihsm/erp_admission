@@ -17,6 +17,7 @@ import { calculateAgeFromDOB } from '../../utils/dateUtils';
 import { AppCard } from '../../components/ui/AppCard';
 import { handleFormEnterKeyDown } from '../../utils/enterKeyNavigation';
 import { getNoAutofillInputProps } from '../../utils/autofillHelper';
+import { focusFirstFormError } from '../../utils/formFocus';
 
 const getFieldSx = (isDark: boolean) => ({
   '& .MuiInputLabel-root': {
@@ -121,8 +122,8 @@ export const StudentDetailsStep: React.FC<{ onNext: () => void }> = ({ onNext })
       component="form"
       id="wizard-step-form"
       autoComplete="off"
-      onKeyDown={(e) => handleFormEnterKeyDown(e, handleSubmit(onSubmit))}
-      onSubmit={handleSubmit(onSubmit)}
+      onKeyDown={(e) => handleFormEnterKeyDown(e, handleSubmit(onSubmit, focusFirstFormError))}
+      onSubmit={handleSubmit(onSubmit, focusFirstFormError)}
     >
       {/* Hidden dummy inputs to trap Chrome profile autofill */}
       <input type="text" name="prevent_autofill_user" id="prevent_autofill_user" style={{ display: 'none' }} tabIndex={-1} autoComplete="off" />

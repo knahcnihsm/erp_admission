@@ -241,14 +241,18 @@ export function toStudentRecord(dto: StudentResponseDto): StudentRecord {
   const certificateDtos = p.certificates || [];
   const certificates: CertificateItem[] =
     certificateDtos.length > 0
-      ? certificateDtos.map((c, i) => ({
-          id: c.certificateId !== undefined ? String(c.certificateId) : `cert-${i + 1}`,
-          name: c.name || '',
-          received: !!c.submitted,
-          file: c.filePath || null,
-          fileName: c.filePath ? c.filePath.split('/').pop() || c.filePath : undefined,
-          uploadedAt: c.uploadedAt,
-        }))
+      ? certificateDtos.map((c, i) => {
+          const serverPath =
+            c.filePath && c.filePath.startsWith('/uploads/') ? c.filePath : null;
+          return {
+            id: c.certificateId !== undefined ? String(c.certificateId) : `cert-${i + 1}`,
+            name: c.name || '',
+            received: !!c.submitted,
+            file: serverPath,
+            fileName: serverPath ? serverPath.split('/').pop() || serverPath : undefined,
+            uploadedAt: serverPath ? c.uploadedAt : undefined,
+          };
+        })
       : STANDARD_CERTIFICATES.map((name, i) => ({
           id: `cert-${i + 1}`,
           name,
@@ -432,12 +436,17 @@ export function toCertificatesStepRequest(
 ): CertificatesStepRequest {
   return {
     certificates: certs.map((c) => {
-      const master = masterCertificates.find((m) => m.name === c.name);
+      const master = masterCertificates.find(
+        (m) => m.name.toUpperCase() === c.name.toUpperCase()
+      );
       const parsedId = /^\d+$/.test(c.id) ? Number(c.id) : NaN;
       return {
         certificateId: master?.id ?? parsedId,
         submitted: !!c.received,
-        filePath: typeof c.file === 'string' && c.file ? c.file : undefined,
+        filePath:
+          typeof c.file === 'string' && c.file.startsWith('/uploads/')
+            ? c.file
+            : undefined,
       };
     }),
   };

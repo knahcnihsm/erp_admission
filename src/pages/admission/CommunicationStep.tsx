@@ -15,6 +15,7 @@ import { useThemeContext } from '../../context/ThemeContext';
 import { AppCard } from '../../components/ui/AppCard';
 import { handleFormEnterKeyDown } from '../../utils/enterKeyNavigation';
 import { getNoAutofillInputProps } from '../../utils/autofillHelper';
+import { focusFirstFormError } from '../../utils/formFocus';
 
 const getFieldSx = (isDark: boolean) => ({
   '& .MuiInputLabel-root': {
@@ -104,8 +105,8 @@ export const CommunicationStep: React.FC<{ onNext: () => void }> = ({ onNext }) 
       component="form"
       id="wizard-step-form"
       autoComplete="off"
-      onKeyDown={(e) => handleFormEnterKeyDown(e, handleSubmit(onSubmit))}
-      onSubmit={handleSubmit(onSubmit)}
+      onKeyDown={(e) => handleFormEnterKeyDown(e, handleSubmit(onSubmit, focusFirstFormError))}
+      onSubmit={handleSubmit(onSubmit, focusFirstFormError)}
     >
       {/* Hidden dummy inputs to trap Chrome profile autofill */}
       <input type="text" name="prevent_autofill_user" id="prevent_autofill_user" style={{ display: 'none' }} tabIndex={-1} autoComplete="off" />
@@ -134,6 +135,7 @@ export const CommunicationStep: React.FC<{ onNext: () => void }> = ({ onNext }) 
                   fullWidth
                   sx={fieldSx}
                   disabled={isViewReadOnly}
+                  inputProps={getNoAutofillInputProps('perm_addr')}
                   error={!!errors.permanentAddress?.addressLine}
                   helperText={errors.permanentAddress?.addressLine?.message}
                 />
@@ -152,7 +154,7 @@ export const CommunicationStep: React.FC<{ onNext: () => void }> = ({ onNext }) 
                   fullWidth
                   sx={fieldSx}
                   disabled={isViewReadOnly}
-                  inputProps={{ maxLength: 6 }}
+                  inputProps={{ ...getNoAutofillInputProps('perm_pin'), maxLength: 6 }}
                   error={!!errors.permanentAddress?.pinCode}
                   helperText={errors.permanentAddress?.pinCode?.message}
                 />
@@ -171,7 +173,7 @@ export const CommunicationStep: React.FC<{ onNext: () => void }> = ({ onNext }) 
                   fullWidth
                   sx={fieldSx}
                   disabled={isViewReadOnly}
-                  inputProps={{ maxLength: 10 }}
+                  inputProps={{ ...getNoAutofillInputProps('perm_mobile'), maxLength: 10 }}
                   error={!!errors.permanentAddress?.mobileNumber}
                   helperText={errors.permanentAddress?.mobileNumber?.message}
                 />
@@ -214,6 +216,7 @@ export const CommunicationStep: React.FC<{ onNext: () => void }> = ({ onNext }) 
                   fullWidth
                   sx={fieldSx}
                   disabled={isViewReadOnly}
+                  inputProps={getNoAutofillInputProps('perm_phone')}
                 />
               )}
             />
@@ -262,6 +265,7 @@ export const CommunicationStep: React.FC<{ onNext: () => void }> = ({ onNext }) 
                   fullWidth
                   sx={fieldSx}
                   disabled={sameAsPermanent || isViewReadOnly}
+                  inputProps={getNoAutofillInputProps('comm_addr')}
                   error={!!errors.communicationAddress?.addressLine}
                   helperText={errors.communicationAddress?.addressLine?.message}
                 />
@@ -280,7 +284,7 @@ export const CommunicationStep: React.FC<{ onNext: () => void }> = ({ onNext }) 
                   fullWidth
                   sx={fieldSx}
                   disabled={sameAsPermanent || isViewReadOnly}
-                  inputProps={{ maxLength: 6 }}
+                  inputProps={{ ...getNoAutofillInputProps('comm_pin'), maxLength: 6 }}
                   error={!!errors.communicationAddress?.pinCode}
                   helperText={errors.communicationAddress?.pinCode?.message}
                 />
@@ -299,7 +303,7 @@ export const CommunicationStep: React.FC<{ onNext: () => void }> = ({ onNext }) 
                   fullWidth
                   sx={fieldSx}
                   disabled={sameAsPermanent || isViewReadOnly}
-                  inputProps={{ maxLength: 10 }}
+                  inputProps={{ ...getNoAutofillInputProps('comm_mobile'), maxLength: 10 }}
                   error={!!errors.communicationAddress?.mobileNumber}
                   helperText={errors.communicationAddress?.mobileNumber?.message}
                 />
@@ -342,6 +346,7 @@ export const CommunicationStep: React.FC<{ onNext: () => void }> = ({ onNext }) 
                   fullWidth
                   sx={fieldSx}
                   disabled={sameAsPermanent || isViewReadOnly}
+                  inputProps={getNoAutofillInputProps('comm_phone')}
                 />
               )}
             />

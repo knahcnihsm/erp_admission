@@ -4,10 +4,11 @@ import {
   SnackbarState,
   ConfirmDialogState,
   StudentFilterParams,
+  CertificateItem,
 } from '../types';
 import { WarningModal } from '../components/common/WarningModal';
 import { STANDARD_CERTIFICATES } from '../utils/constants';
-import { masterDataApi, studentApi, ApiError } from '../api/client';
+import { masterDataApi, studentApi, certificateApi, ApiError } from '../api/client';
 import {
   toStudentRecord,
   toPersonalStepRequest,
@@ -683,7 +684,48 @@ export const AdmissionProvider: React.FC<{ children: React.ReactNode }> = ({ chi
     setSavingStep(true);
     try {
       const dto = await studentApi.submitAdmission(payload);
-      const record = mergeDto(dto);
+      const studentId = dto.id;
+
+      const masterCertificates = master.certificates || [];
+      const certIdOf = (cert: CertificateItem): number | null => {
+        const master = masterCertificates.find(
+          (m) => m.name.toUpperCase() === cert.name.toUpperCase()
+        );
+        if (master) return master.id;
+        const parsed = /^\d+$/.test(cert.id) ? Number(cert.id) : NaN;
+        return Number.isNaN(parsed) ? null : parsed;
+      };
+
+      const certsToUpload = (draft.certificates || []).filter(
+        (c) => c.file instanceof File
+      );
+      const certsToRemove = (draft.certificates || []).filter(
+        (c) => c.file == null || c.file === ''
+      );
+
+      await Promise.all([
+        ...certsToUpload.map((c) => {
+          const certificateId = certIdOf(c);
+          if (certificateId == null) {
+            showSnackbar(`Could not resolve certificate: ${c.name}`, 'error');
+            return Promise.resolve();
+          }
+          return certificateApi
+            .upload(studentId, certificateId, c.file as File)
+            .catch((e) =>
+              showSnackbar(`Upload failed for ${c.name}: ${messageFromError(e)}`, 'error')
+            );
+        }),
+        ...certsToRemove.map((c) => {
+          const certificateId = certIdOf(c);
+          return certificateId != null
+            ? certificateApi.remove(studentId, certificateId).catch(() => undefined)
+            : Promise.resolve();
+        }),
+      ]);
+
+      const fresh = await studentApi.getStudent(studentId);
+      const record = mergeDto(fresh);
 
       setStudents((prev) => {
         const exists = prev.some((s) => s.id === record.id);

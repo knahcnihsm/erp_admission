@@ -21,6 +21,7 @@ import { AppCard } from '../../components/ui/AppCard';
 import { CertificateItem } from '../../types';
 
 import { handleFormEnterKeyDown } from '../../utils/enterKeyNavigation';
+import { resolveFileUrl, downloadFile } from '../../api/client';
 
 export const CertificatesUploadStep: React.FC<{ onSave: () => void }> = ({ onSave }) => {
   const { mode } = useThemeContext();
@@ -31,7 +32,7 @@ export const CertificatesUploadStep: React.FC<{ onSave: () => void }> = ({ onSav
     draftStudent.certificates || []
   );
 
-  const [previewCert, setPreviewCert] = useState<CertificateItem | null>(null);
+  const [previewCert, setPreviewCert] = useState<{ name: string; url: string } | null>(null);
   const [uploadErrors, setUploadErrors] = useState<Record<string, string>>({});
 
   // Keep uploaded/checked certificates synchronized with the shared draft so
@@ -83,20 +84,48 @@ export const CertificatesUploadStep: React.FC<{ onSave: () => void }> = ({ onSav
       return copy;
     });
 
-    const fakeUrl = URL.createObjectURL(file);
+    const objectUrl = URL.createObjectURL(file);
     setCertificates((prev) =>
       prev.map((c) =>
         c.id === id
           ? {
               ...c,
               received: true,
-              file: fakeUrl,
+              file,
               fileName: file.name,
               uploadedAt: new Date().toISOString().split('T')[0],
             }
           : c
       )
     );
+    return () => URL.revokeObjectURL(objectUrl);
+  };
+
+  const resolvePreviewUrl = (cert: CertificateItem): string | null => {
+    if (cert.file instanceof File) return URL.createObjectURL(cert.file);
+    if (typeof cert.file === 'string') return resolveFileUrl(cert.file);
+    return null;
+  };
+
+  const handleDownload = async (cert: CertificateItem) => {
+    if (cert.file instanceof File) {
+      const url = URL.createObjectURL(cert.file);
+      const anchor = document.createElement('a');
+      anchor.href = url;
+      anchor.download = cert.fileName || cert.file.name || 'document';
+      document.body.appendChild(anchor);
+      anchor.click();
+      anchor.remove();
+      URL.revokeObjectURL(url);
+      return;
+    }
+    if (typeof cert.file === 'string') {
+      try {
+        await downloadFile(cert.file, cert.fileName);
+      } catch {
+        // ignore; snackbar elsewhere
+      }
+    }
   };
 
   const handleRemoveFile = (id: string) => {
@@ -214,7 +243,10 @@ export const CertificatesUploadStep: React.FC<{ onSave: () => void }> = ({ onSav
                         <Button
                           size="small"
                           variant="text"
-                          onClick={() => setPreviewCert(cert)}
+                          onClick={() => {
+                            const url = resolvePreviewUrl(cert);
+                            if (url) setPreviewCert({ name: cert.name, url });
+                          }}
                           startIcon={<Eye size={12} />}
                           sx={{ color: isDark ? '#38BDF8' : '#0D47A1', fontWeight: 600, fontSize: '12px' }}
                         >
@@ -223,9 +255,7 @@ export const CertificatesUploadStep: React.FC<{ onSave: () => void }> = ({ onSav
                         <Button
                           size="small"
                           variant="text"
-                          component="a"
-                          href={String(cert.file)}
-                          download={cert.fileName || 'document'}
+                          onClick={() => handleDownload(cert)}
                           startIcon={<Download size={12} />}
                           sx={{ color: isDark ? '#38BDF8' : '#0D47A1', fontWeight: 600, fontSize: '12px' }}
                         >
@@ -282,10 +312,10 @@ export const CertificatesUploadStep: React.FC<{ onSave: () => void }> = ({ onSav
           Document Preview: {previewCert?.name}
         </DialogTitle>
         <DialogContent sx={{ minHeight: '300px', display: 'flex', justifyContent: 'center', alignItems: 'center', padding: '12px 18px' }}>
-          {previewCert?.file ? (
+          {previewCert?.url ? (
             <Box
               component="iframe"
-              src={String(previewCert.file)}
+              src={previewCert.url}
               sx={{ width: '100%', height: '480px', border: 'none', borderRadius: '8px' }}
             />
           ) : (

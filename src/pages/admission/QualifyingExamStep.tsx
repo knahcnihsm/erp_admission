@@ -19,6 +19,7 @@ import { useThemeContext } from '../../context/ThemeContext';
 import { AppCard } from '../../components/ui/AppCard';
 import { SummaryCard } from '../../components/ui/SummaryCard';
 import { handleFormEnterKeyDown } from '../../utils/enterKeyNavigation';
+import { focusFirstFormError } from '../../utils/formFocus';
 import { calculateHSCCutOff } from '../../utils/cutoffCalculator';
 import { HSCSubjectMark, ExamPassed } from '../../types';
 
@@ -270,6 +271,7 @@ export const QualifyingExamStep: React.FC<{ onNext: () => void }> = ({ onNext })
         !qualifyingData.monthYearPassing
       ) {
         showSnackbar('Please complete all required Qualifying Examination fields before proceeding.', 'error');
+        focusFirstFormError();
         return;
       }
 
@@ -290,6 +292,7 @@ export const QualifyingExamStep: React.FC<{ onNext: () => void }> = ({ onNext })
     } else if (program === 'Second Year B.Tech (Lateral Entry)') {
       if (!diploma.diplomaCourse || !diploma.institutionName || !diploma.board) {
         showSnackbar('Please complete all required Diploma Details fields before proceeding.', 'error');
+        focusFirstFormError();
         return;
       }
 
@@ -311,6 +314,7 @@ export const QualifyingExamStep: React.FC<{ onNext: () => void }> = ({ onNext })
         !pg.monthYearPassing
       ) {
         showSnackbar('Please complete all required Undergraduate / Qualifying Degree fields before proceeding.', 'error');
+        focusFirstFormError();
         return;
       }
 

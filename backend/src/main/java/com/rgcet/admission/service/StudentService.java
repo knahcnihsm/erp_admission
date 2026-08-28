@@ -415,9 +415,13 @@ public class StudentService {
                 student.getCertificates().add(sc);
             }
             sc.setIsSubmitted(item.submitted());
-            if (item.filePath() != null && !item.filePath().isBlank()) {
-                sc.setFilePath(item.filePath());
+            String filePath = item.filePath();
+            if (filePath != null && !filePath.isBlank() && filePath.startsWith("/uploads/")) {
+                sc.setFilePath(filePath);
                 sc.setUploadedAt(now);
+            } else if (!item.submitted()) {
+                sc.setFilePath(null);
+                sc.setUploadedAt(null);
             }
         }
         touch(student);

@@ -36,6 +36,30 @@ import {
 
 const API_BASE_URL = (import.meta.env.VITE_API_BASE_URL as string | undefined) ?? 'http://localhost:8080';
 
+export const resolveFileUrl = (path?: string | null): string | null => {
+  if (!path || !path.startsWith('/uploads/')) return null;
+  return `${API_BASE_URL}${path}`;
+};
+
+export const downloadFile = async (path?: string | null, fallbackName?: string): Promise<void> => {
+  const url = resolveFileUrl(path);
+  if (!url) return;
+  const response = await fetch(url);
+  if (!response.ok) {
+    throw new Error(`Download failed (${response.status})`);
+  }
+  const blob = await response.blob();
+  const objectUrl = URL.createObjectURL(blob);
+  const name = path?.split('/').pop() || fallbackName || 'document';
+  const anchor = document.createElement('a');
+  anchor.href = objectUrl;
+  anchor.download = name;
+  document.body.appendChild(anchor);
+  anchor.click();
+  anchor.remove();
+  URL.revokeObjectURL(objectUrl);
+};
+
 export class ApiError extends Error {
   status: number;
 
@@ -46,17 +70,7 @@ export class ApiError extends Error {
   }
 }
 
-async function request<T>(path: string, options: RequestInit = {}): Promise<T> {
-  const headers: Record<string, string> = {
-    'Content-Type': 'application/json',
-    ...(options.headers as Record<string, string> | undefined),
-  };
-
-  const response = await fetch(`${API_BASE_URL}${path}`, {
-    ...options,
-    headers,
-  });
-
+async function handleResponse<T>(response: Response): Promise<T> {
   if (!response.ok) {
     let message = `Request failed (${response.status})`;
     try {
@@ -80,6 +94,25 @@ async function request<T>(path: string, options: RequestInit = {}): Promise<T> {
     return undefined as T;
   }
   return response.json() as Promise<T>;
+}
+
+async function request<T>(path: string, options: RequestInit = {}): Promise<T> {
+  const headers: Record<string, string> = {
+    'Content-Type': 'application/json',
+    ...(options.headers as Record<string, string> | undefined),
+  };
+
+  const response = await fetch(`${API_BASE_URL}${path}`, {
+    ...options,
+    headers,
+  });
+
+  return handleResponse<T>(response);
+}
+
+async function multipartRequest<T>(path: string, options: RequestInit = {}): Promise<T> {
+  const response = await fetch(`${API_BASE_URL}${path}`, options);
+  return handleResponse<T>(response);
 }
 
 const json = (method: string) => <T>(path: string, body?: unknown) =>
@@ -187,6 +220,23 @@ export const masterDataApi = {
 
 export const api = {
   baseUrl: API_BASE_URL,
+};
+
+// ---------------- Certificate upload API ----------------
+
+export const certificateApi = {
+  upload: (studentId: number, certificateId: number, file: File) => {
+    const formData = new FormData();
+    formData.append('file', file);
+    formData.append('studentId', String(studentId));
+    formData.append('certificateId', String(certificateId));
+    return multipartRequest<{ filePath: string }>('/api/certificates/upload', {
+      method: 'POST',
+      body: formData,
+    });
+  },
+  remove: (studentId: number, certificateId: number) =>
+    request<undefined>(`/api/certificates/${studentId}/${certificateId}`, { method: 'DELETE' }),
 };
 
 // ---------------- Bulk Update API ----------------

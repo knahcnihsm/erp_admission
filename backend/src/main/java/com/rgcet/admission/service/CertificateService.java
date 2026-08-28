@@ -28,7 +28,8 @@ public class CertificateService {
         Certificate certificate = certificateRepository.findById(certificateId)
                 .orElseThrow(() -> new ResourceNotFoundException("Certificate not found: " + certificateId));
 
-        String filePath = fileStorageService.store(file);
+        String filePath = fileStorageService.storeCertificate(
+                student.getApplicationNo(), certificate.getCertificateName(), file);
 
         StudentCertificate studentCertificate = student.getCertificates().stream()
                 .filter(c -> c.getCertificate() != null
@@ -47,5 +48,30 @@ public class CertificateService {
         studentCertificate.setUploadedAt(LocalDateTime.now());
         studentRepository.save(student);
         return filePath;
+    }
+
+    @Transactional
+    public void delete(Long studentId, Long certificateId) {
+        Student student = studentRepository.findById(studentId)
+                .orElseThrow(() -> new ResourceNotFoundException("Student not found: " + studentId));
+
+        StudentCertificate studentCertificate = student.getCertificates().stream()
+                .filter(c -> c.getCertificate() != null
+                        && c.getCertificate().getCertificateId().equals(certificateId))
+                .findFirst()
+                .orElse(null);
+
+        if (studentCertificate == null) {
+            return;
+        }
+
+        Certificate certificate = studentCertificate.getCertificate();
+        if (certificate != null) {
+            fileStorageService.deleteCertificate(student.getApplicationNo(), certificate.getCertificateName());
+        }
+        studentCertificate.setFilePath(null);
+        studentCertificate.setIsSubmitted(false);
+        studentCertificate.setUploadedAt(null);
+        studentRepository.save(student);
     }
 }
