@@ -64,12 +64,12 @@ public class PGQualification {
     @PrePersist
     @PreUpdate
     public void normalizeTextFields() {
-        this.universityName = TextUtil.upper(this.universityName);
-        this.universityPlace = TextUtil.upper(this.universityPlace);
-        this.institutionName = TextUtil.upper(this.institutionName);
-        this.institutionPlace = TextUtil.upper(this.institutionPlace);
-        this.examPassed = TextUtil.upper(this.examPassed);
-        this.monthYearOfPassing = TextUtil.upper(this.monthYearOfPassing);
-        this.degreeRegistrationNo = TextUtil.upper(this.degreeRegistrationNo);
+        this.universityName = TextUtil.titleCase(this.universityName);
+        this.universityPlace = TextUtil.titleCase(this.universityPlace);
+        this.institutionName = TextUtil.titleCase(this.institutionName);
+        this.institutionPlace = TextUtil.titleCase(this.institutionPlace);
+        this.examPassed = TextUtil.titleCase(this.examPassed);
+        this.monthYearOfPassing = TextUtil.titleCase(this.monthYearOfPassing);
+        this.degreeRegistrationNo = TextUtil.titleCase(this.degreeRegistrationNo);
     }
 }

@@ -47,6 +47,7 @@ import java.time.LocalDateTime;
 import java.time.Period;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
+import java.util.Arrays;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
@@ -559,7 +560,7 @@ public class BulkAdmissionService {
         student.setDistrict(str(studentRow, "district"));
         student.setNationality(str(studentRow, "nationality"));
         student.setCaste(enumOf(Caste.class, studentRow, "caste"));
-        student.setStatus(StudentStatus.ACTIVE);
+        student.setStatus(StudentStatus.Active);
         student.setCreatedAt(now);
         student.setUpdatedAt(now);
 
@@ -576,7 +577,7 @@ public class BulkAdmissionService {
         Row commRow = addressRow(outcome, "COMMUNICATION");
         Address perm = new Address();
         perm.setStudent(student);
-        perm.setAddressType(AddressType.PERMANENT);
+        perm.setAddressType(AddressType.Permanent);
         perm.setAddressLine(str(permRow, "address_line"));
         perm.setPincode(str(permRow, "pincode"));
         perm.setPhone(str(permRow, "phone"));
@@ -586,7 +587,7 @@ public class BulkAdmissionService {
         if (commRow != null) {
             Address comm = new Address();
             comm.setStudent(student);
-            comm.setAddressType(AddressType.COMMUNICATION);
+            comm.setAddressType(AddressType.Communication);
             comm.setAddressLine(str(commRow, "address_line"));
             comm.setPincode(str(commRow, "pincode"));
             comm.setPhone(str(commRow, "phone"));
@@ -740,13 +741,14 @@ public class BulkAdmissionService {
 
     private static PaymentStatus paymentStatus(BigDecimal paid, BigDecimal pending) {
         if (pending.compareTo(BigDecimal.ZERO) <= 0) {
-            return PaymentStatus.PAID;
+            return PaymentStatus.Paid;
         }
         if (paid.compareTo(BigDecimal.ZERO) > 0) {
-            return PaymentStatus.PARTIAL;
+            return PaymentStatus.Partial;
         }
-        return PaymentStatus.PENDING;
+        return PaymentStatus.Pending;
     }
+
 
     private String computeTotalFeePreview(RecordOutcome outcome) {
         Row feeRow = firstRow(outcome.rows, "student_fee");
@@ -858,7 +860,11 @@ public class BulkAdmissionService {
         if (isBlank(value)) {
             return null;
         }
-        return Enum.valueOf(type, value.toUpperCase());
+        return Arrays.stream(type.getEnumConstants())
+                .filter(e -> e.name().equalsIgnoreCase(value.trim()))
+                .findFirst()
+                .orElseThrow(() -> new IllegalArgumentException(
+                        "Unknown " + type.getSimpleName() + " value: '" + value + "'"));
     }
 
     private Integer ageOf(LocalDate dateOfBirth) {

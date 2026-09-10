@@ -83,10 +83,10 @@ class BulkUpdateServiceTest {
         Student student = new Student();
         student.setApplicationNo(APP_NO);
         student.setStudentName("Sample Student");
-        student.setGender(Gender.MALE);
+        student.setGender(Gender.Male);
         student.setMobileNumber("9840123451");
         student.setEmailId("sample@example.com");
-        student.setStatus(StudentStatus.ACTIVE);
+        student.setStatus(StudentStatus.Active);
         return student;
     }
 
@@ -126,9 +126,11 @@ class BulkUpdateServiceTest {
         assertTrue(preview.records().get(0).valid());
         assertEquals(1, preview.records().get(0).changes().size());
         assertEquals("gender", preview.records().get(0).changes().get(0).fieldName());
-        assertEquals("MALE", preview.records().get(0).changes().get(0).oldValue());
+        assertEquals("Male", preview.records().get(0).changes().get(0).oldValue());
         assertEquals("FEMALE", preview.records().get(0).changes().get(0).newValue());
     }
+
+
 
     @Test
     void validateReportsUnchangedRecord() {
@@ -210,7 +212,7 @@ class BulkUpdateServiceTest {
     @Test
     void validateFlagsArchivedStudent() {
         Student student = activeStudent();
-        student.setStatus(StudentStatus.ARCHIVED);
+        student.setStatus(StudentStatus.Archived);
         givenStudent(student);
         BulkUpdateRequest req = request("student_details", List.of(
                 row("application_no", APP_NO, "gender", "FEMALE")));
@@ -279,7 +281,7 @@ class BulkUpdateServiceTest {
         assertEquals(1, result.summary().totalRecords());
         assertEquals(1, result.summary().updatedRecords());
         assertEquals("UPDATED", result.results().get(0).status());
-        assertEquals(Gender.FEMALE, student.getGender());
+        assertEquals(Gender.Female, student.getGender());
         verify(studentRepository).save(student);
         verify(auditLogRepository).save(any(AuditLog.class));
     }
@@ -310,10 +312,11 @@ class BulkUpdateServiceTest {
 
         assertEquals(1, result.summary().failedRecords());
         assertEquals("FAILED", result.results().get(0).status());
-        assertEquals(Gender.MALE, student.getGender());
+        assertEquals(Gender.Male, student.getGender());
         verify(studentRepository, never()).save(any(Student.class));
         verify(auditLogRepository, never()).save(any(AuditLog.class));
     }
+
 
     @Test
     void applyRejectsUnknownReference() {
@@ -443,7 +446,8 @@ class BulkUpdateServiceTest {
 
         assertEquals(1, result.summary().updatedRecords());
         assertEquals(1, exam.getAcademicMarks().size());
-        assertEquals("MATHEMATICS", exam.getAcademicMarks().get(0).getSubjectName());
+        assertEquals("Mathematics", exam.getAcademicMarks().get(0).getSubjectName());
+
         assertEquals(0, new BigDecimal("90").compareTo(exam.getAcademicMarks().get(0).getMarksObtained()));
         verify(studentRepository).save(student);
         verify(auditLogRepository, atLeastOnce()).save(any(AuditLog.class));

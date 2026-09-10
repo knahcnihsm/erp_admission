@@ -32,6 +32,6 @@ public class Certificate {
     @PrePersist
     @PreUpdate
     public void normalizeTextFields() {
-        this.certificateName = TextUtil.upper(this.certificateName);
+        this.certificateName = TextUtil.titleCase(this.certificateName);
     }
 }

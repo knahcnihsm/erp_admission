@@ -45,6 +45,6 @@ public class BusRoute {
     @PrePersist
     @PreUpdate
     public void normalizeTextFields() {
-        this.routeName = TextUtil.upper(this.routeName);
+        this.routeName = TextUtil.titleCase(this.routeName);
     }
 }

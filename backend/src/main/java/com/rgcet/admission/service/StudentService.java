@@ -88,7 +88,7 @@ public class StudentService {
         }
         Student student = new Student();
         applyPersonal(student, request);
-        student.setStatus(StudentStatus.DRAFT);
+        student.setStatus(StudentStatus.Draft);
         LocalDateTime now = LocalDateTime.now();
         student.setCreatedAt(now);
         student.setUpdatedAt(now);
@@ -131,7 +131,7 @@ public class StudentService {
     public StudentResponseDto updateCommunication(Long id, CommunicationStepRequest request) {
         Student student = getStudentOrThrow(id);
         assertNotArchived(student);
-        Address permanent = getAddress(student, AddressType.PERMANENT);
+        Address permanent = getAddress(student, AddressType.Permanent);
         CommunicationStepRequest.AddressRequest permReq = request.permanentAddress();
         permanent.setAddressLine(permReq.addressLine());
         permanent.setPincode(permReq.pincode());
@@ -140,7 +140,7 @@ public class StudentService {
         permanent.setEmail(permReq.email() != null ? permReq.email().trim() : null);
         permanent.setSameAsPermanent(request.sameAsPermanent());
 
-        Address communication = getAddress(student, AddressType.COMMUNICATION);
+        Address communication = getAddress(student, AddressType.Communication);
         if (request.sameAsPermanent()) {
             communication.setAddressLine(permanent.getAddressLine());
             communication.setPincode(permanent.getPincode());
@@ -336,7 +336,7 @@ public class StudentService {
         fee.setHostelFee(result.hostelFee());
         fee.setTotalFee(result.totalFee());
         if (fee.getPaymentStatus() == null) {
-            fee.setPaymentStatus(PaymentStatus.PENDING);
+            fee.setPaymentStatus(PaymentStatus.Pending);
         }
     }
 
@@ -468,7 +468,7 @@ public class StudentService {
         }
 
         Student student = getStudentOrThrow(id);
-        student.setStatus(StudentStatus.ACTIVE);
+        student.setStatus(StudentStatus.Active);
         touch(student);
         return StudentResponseDto.from(student);
     }
@@ -479,7 +479,7 @@ public class StudentService {
     public StudentResponseDto finalize(Long id) {
         Student student = getStudentOrThrow(id);
         assertNotArchived(student);
-        student.setStatus(StudentStatus.ACTIVE);
+        student.setStatus(StudentStatus.Active);
         touch(student);
         return StudentResponseDto.from(student);
     }
@@ -507,7 +507,7 @@ public class StudentService {
 
     @Transactional(readOnly = true)
     public List<StudentSummaryDto> listArchived() {
-        return studentRepository.findAll(byStatus(StudentStatus.ARCHIVED), Sort.by(Sort.Direction.DESC, "archivedAt"))
+        return studentRepository.findAll(byStatus(StudentStatus.Archived), Sort.by(Sort.Direction.DESC, "archivedAt"))
                 .stream()
                 .map(StudentSummaryDto::from)
                 .toList();
@@ -516,11 +516,11 @@ public class StudentService {
     @Transactional
     public StudentResponseDto archive(Long id, ArchiveRequest request) {
         Student student = getStudentOrThrow(id);
-        if (student.getStatus() == StudentStatus.ARCHIVED) {
+        if (student.getStatus() == StudentStatus.Archived) {
             throw new IllegalStateException("Student is already archived.");
         }
         LocalDateTime now = LocalDateTime.now();
-        student.setStatus(StudentStatus.ARCHIVED);
+        student.setStatus(StudentStatus.Archived);
         student.setArchivedAt(now);
         student.setArchiveReason(request.reason());
 
@@ -537,11 +537,11 @@ public class StudentService {
     @Transactional
     public StudentResponseDto restore(Long id) {
         Student student = getStudentOrThrow(id);
-        if (student.getStatus() != StudentStatus.ARCHIVED) {
+        if (student.getStatus() != StudentStatus.Archived) {
             throw new IllegalStateException("Student is not archived.");
         }
         archiveRepository.deleteByStudentStudentId(id);
-        student.setStatus(StudentStatus.ACTIVE);
+        student.setStatus(StudentStatus.Active);
         student.setArchivedAt(null);
         student.setArchiveReason(null);
         touch(student);
@@ -550,18 +550,19 @@ public class StudentService {
 
     @Transactional(readOnly = true)
     public long countActive() {
-        return studentRepository.countByStatus(StudentStatus.ACTIVE);
+        return studentRepository.countByStatus(StudentStatus.Active);
     }
 
     @Transactional(readOnly = true)
     public long countArchived() {
-        return studentRepository.countByStatus(StudentStatus.ARCHIVED);
+        return studentRepository.countByStatus(StudentStatus.Archived);
     }
 
     @Transactional(readOnly = true)
     public long countDraft() {
-        return studentRepository.countByStatus(StudentStatus.DRAFT);
+        return studentRepository.countByStatus(StudentStatus.Draft);
     }
+
 
     // ---------- Private helpers ----------
 
@@ -630,10 +631,11 @@ public class StudentService {
     }
 
     private void assertNotArchived(Student student) {
-        if (student.getStatus() == StudentStatus.ARCHIVED) {
+        if (student.getStatus() == StudentStatus.Archived) {
             throw new IllegalStateException("Archived students cannot be modified. Restore the student first.");
         }
     }
+
 
     private Student getStudentOrThrow(Long id) {
         return studentRepository.findById(id)
@@ -669,16 +671,16 @@ public class StudentService {
         LocalDateTime now = LocalDateTime.now();
 
         String[][] fakeData = {
-            {"RGCET/2026/2001", "26BTECH001", "Aarav Sharma", "2008-05-14", "987654321001", "MALE", "Puducherry", "Indian", "OBC", "Rajesh Sharma", "9840123451", "Computer Science & Engineering (CSE)", "CENTAC", "75000", "123 MG Road, Puducherry", "605001", "aarav.sharma@example.com"},
-            {"RGCET/2026/2002", "26BTECH002", "Ananya Ramakrishnan", "2008-08-20", "987654321002", "FEMALE", "Chennai", "Indian", "OTHERS", "Ramakrishnan V", "9840123452", "Artificial Intelligence and Data Science (AI&DS)", "Management", "90000", "45 Anna Nagar, Chennai", "600040", "ananya.r@example.com"},
-            {"RGCET/2026/2003", "26BTECH003", "Rahul Varma", "2008-02-11", "987654321003", "MALE", "Cuddalore", "Indian", "OBC", "Suresh Varma", "9840123453", "Information Technology (IT)", "CENTAC", "75000", "88 Beach Road, Cuddalore", "607001", "rahul.varma@example.com"},
-            {"RGCET/2026/2004", "26BTECH004", "Kavya Subramanian", "2008-11-05", "987654321004", "FEMALE", "Karaikal", "Indian", "SC", "Subramanian K", "9840123454", "Electronics & Communication Engineering (ECE)", "CENTAC", "75000", "12 Church Street, Karaikal", "609602", "kavya.subu@example.com"},
-            {"RGCET/2026/2005", "26BTECH005", "Dhruv Patel", "2008-04-18", "987654321005", "MALE", "Puducherry", "Indian", "OTHERS", "Vikram Patel", "9840123455", "Artificial Intelligence and Machine Learning (AI&ML)", "Management", "90000", "67 Heritage Town, Puducherry", "605001", "dhruv.patel@example.com"},
-            {"RGCET/2026/2006", "26BTECH006", "Priya Sundaram", "2008-09-30", "987654321006", "FEMALE", "Villupuram", "Indian", "OBC", "Sundaram M", "9840123456", "Biomedical Engineering (BME)", "CENTAC", "75000", "34 Main Road, Villupuram", "605602", "priya.sundaram@example.com"},
-            {"RGCET/2026/2007", "26BTECH007", "Vikramaditya Reddy", "2008-01-25", "987654321007", "MALE", "Chidambaram", "Indian", "OTHERS", "Raghunath Reddy", "9840123457", "Computer Science & Engineering (CSE)", "Management", "100000", "90 Temple Street, Chidambaram", "608001", "vikram.reddy@example.com"},
-            {"RGCET/2026/2008", "26BTECH008", "Sneha Venkatesh", "2008-07-12", "987654321008", "FEMALE", "Neyveli", "Indian", "OBC", "Venkatesh N", "9840123458", "Information Technology (IT)", "Management", "80000", "15 Township Block 4, Neyveli", "607801", "sneha.v@example.com"},
-            {"RGCET/2026/2009", "26BTECH009", "Karthik Nair", "2008-10-02", "987654321009", "MALE", "Puducherry", "Indian", "OBC", "Narayanan Nair", "9840123459", "Electronics & Communication Engineering (ECE)", "CENTAC", "75000", "22 ECR Road, Lawspet, Puducherry", "605008", "karthik.nair@example.com"},
-            {"RGCET/2026/2010", "26BTECH010", "Divya Iyer", "2008-06-19", "987654321010", "FEMALE", "Puducherry", "Indian", "OTHERS", "Sankar Iyer", "9840123460", "Artificial Intelligence and Data Science (AI&DS)", "CENTAC", "75000", "59 VIP Avenue, Puducherry", "605011", "divya.iyer@example.com"}
+            {"RGCET/2026/2001", "26BTECH001", "Aarav Sharma", "2008-05-14", "987654321001", "Male", "Puducherry", "Indian", "OBC", "Rajesh Sharma", "9840123451", "Computer Science & Engineering (CSE)", "Centac", "75000", "123 MG Road, Puducherry", "605001", "aarav.sharma@example.com"},
+            {"RGCET/2026/2002", "26BTECH002", "Ananya Ramakrishnan", "2008-08-20", "987654321002", "Female", "Chennai", "Indian", "Others", "Ramakrishnan V", "9840123452", "Artificial Intelligence and Data Science (AI&DS)", "Management", "90000", "45 Anna Nagar, Chennai", "600040", "ananya.r@example.com"},
+            {"RGCET/2026/2003", "26BTECH003", "Rahul Varma", "2008-02-11", "987654321003", "Male", "Cuddalore", "Indian", "OBC", "Suresh Varma", "9840123453", "Information Technology (IT)", "Centac", "75000", "88 Beach Road, Cuddalore", "607001", "rahul.varma@example.com"},
+            {"RGCET/2026/2004", "26BTECH004", "Kavya Subramanian", "2008-11-05", "987654321004", "Female", "Karaikal", "Indian", "SC", "Subramanian K", "9840123454", "Electronics & Communication Engineering (ECE)", "Centac", "75000", "12 Church Street, Karaikal", "609602", "kavya.subu@example.com"},
+            {"RGCET/2026/2005", "26BTECH005", "Dhruv Patel", "2008-04-18", "987654321005", "Male", "Puducherry", "Indian", "Others", "Vikram Patel", "9840123455", "Artificial Intelligence and Machine Learning (AI&ML)", "Management", "90000", "67 Heritage Town, Puducherry", "605001", "dhruv.patel@example.com"},
+            {"RGCET/2026/2006", "26BTECH006", "Priya Sundaram", "2008-09-30", "987654321006", "Female", "Villupuram", "Indian", "OBC", "Sundaram M", "9840123456", "Biomedical Engineering (BME)", "Centac", "75000", "34 Main Road, Villupuram", "605602", "priya.sundaram@example.com"},
+            {"RGCET/2026/2007", "26BTECH007", "Vikramaditya Reddy", "2008-01-25", "987654321007", "Male", "Chidambaram", "Indian", "Others", "Raghunath Reddy", "9840123457", "Computer Science & Engineering (CSE)", "Management", "100000", "90 Temple Street, Chidambaram", "608001", "vikram.reddy@example.com"},
+            {"RGCET/2026/2008", "26BTECH008", "Sneha Venkatesh", "2008-07-12", "987654321008", "Female", "Neyveli", "Indian", "OBC", "Venkatesh N", "9840123458", "Information Technology (IT)", "Management", "80000", "15 Township Block 4, Neyveli", "607801", "sneha.v@example.com"},
+            {"RGCET/2026/2009", "26BTECH009", "Karthik Nair", "2008-10-02", "987654321009", "Male", "Puducherry", "Indian", "OBC", "Narayanan Nair", "9840123459", "Electronics & Communication Engineering (ECE)", "Centac", "75000", "22 ECR Road, Lawspet, Puducherry", "605008", "karthik.nair@example.com"},
+            {"RGCET/2026/2010", "26BTECH010", "Divya Iyer", "2008-06-19", "987654321010", "Female", "Puducherry", "Indian", "Others", "Sankar Iyer", "9840123460", "Artificial Intelligence and Data Science (AI&DS)", "Centac", "75000", "59 VIP Avenue, Puducherry", "605011", "divya.iyer@example.com"}
         };
 
         for (String[] data : fakeData) {
@@ -696,7 +698,7 @@ public class StudentService {
             s.setDistrict(data[6]);
             s.setNationality(data[7]);
             s.setCaste(Caste.valueOf(data[8]));
-            s.setStatus(StudentStatus.ACTIVE);
+            s.setStatus(StudentStatus.Active);
             s.setCreatedAt(now);
             s.setUpdatedAt(now);
 
@@ -710,7 +712,7 @@ public class StudentService {
 
             Address perm = new Address();
             perm.setStudent(s);
-            perm.setAddressType(AddressType.PERMANENT);
+            perm.setAddressType(AddressType.Permanent);
             perm.setMobile(data[10]);
             perm.setEmail(data[16]);
             perm.setAddressLine(data[14]);
@@ -719,7 +721,7 @@ public class StudentService {
 
             Address comm = new Address();
             comm.setStudent(s);
-            comm.setAddressType(AddressType.COMMUNICATION);
+            comm.setAddressType(AddressType.Communication);
             comm.setMobile(data[10]);
             comm.setEmail(data[16]);
             comm.setAddressLine(data[14]);
@@ -758,8 +760,9 @@ public class StudentService {
             if (status != null) {
                 predicates.add(cb.equal(root.get("status"), status));
             } else {
-                predicates.add(cb.notEqual(root.get("status"), StudentStatus.ARCHIVED));
+                predicates.add(cb.notEqual(root.get("status"), StudentStatus.Archived));
             }
+
             if (isNotBlank(search)) {
                 String like = "%" + search.trim().toLowerCase() + "%";
                 predicates.add(cb.or(

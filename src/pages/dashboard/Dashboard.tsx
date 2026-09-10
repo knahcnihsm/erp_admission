@@ -210,11 +210,11 @@ export const Dashboard: React.FC = () => {
     // 5. Gender
     let matchesGender = true;
     if (appliedFilters.gender !== 'All') {
-      const gender = student.personal.gender.toUpperCase();
+      const gender = student.personal.gender;
       if (appliedFilters.gender === 'Other') {
-        matchesGender = gender !== 'MALE' && gender !== 'FEMALE';
+        matchesGender = gender !== 'Male' && gender !== 'Female';
       } else {
-        matchesGender = gender === appliedFilters.gender.toUpperCase();
+        matchesGender = gender.toLowerCase() === appliedFilters.gender.toLowerCase();
       }
     }
 

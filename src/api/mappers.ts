@@ -37,17 +37,14 @@ import { STANDARD_CERTIFICATES } from '../utils/constants';
 
 const num = (v?: number | null): number => (v === null || v === undefined ? 0 : Number(v));
 
-const toFrontendGender = (g?: Gender): 'Male' | 'Female' | 'Others' | undefined => {
-  if (!g) return undefined;
-  if (g === 'OTHERS') return 'Others';
-  return (g.charAt(0) + g.slice(1).toLowerCase()) as 'Male' | 'Female' | 'Others';
-};
+const toFrontendGender = (g?: Gender): 'Male' | 'Female' | 'Others' | undefined => g ?? undefined;
 
 export const toBackendGender = (g?: string): Gender | null => {
   if (!g) return null;
-  const upper = g.toUpperCase();
-  return upper === 'MALE' || upper === 'FEMALE' || upper === 'OTHERS'
-    ? (upper as Gender)
+  // Normalise to Title Case: 'male' -> 'Male', 'MALE' -> 'Male', 'Male' -> 'Male'
+  const titleCase = g.charAt(0).toUpperCase() + g.slice(1).toLowerCase() as Gender;
+  return titleCase === 'Male' || titleCase === 'Female' || titleCase === 'Others'
+    ? titleCase
     : null;
 };
 
@@ -63,27 +60,28 @@ export const toBackendCaste = (caste?: string): Caste | null => {
       return 'OBC';
     case 'OC':
     case 'SCA':
-      return 'OTHERS';
+      return 'Others';
     case 'OBC':
     case 'SC':
     case 'ST':
-    case 'OTHERS':
       return upper as Caste;
+    case 'OTHERS':
+      return 'Others';
     default:
       return null;
   }
 };
 
 const toFrontendStatus = (status?: StudentStatus): 'Active' | 'Archived' => {
-  if (status === 'ARCHIVED') return 'Archived';
+  if (status === 'Archived') return 'Archived';
   return 'Active';
 };
 
 const toFrontendPaymentStatus = (s?: PaymentStatus): 'Paid' | 'Partial' | 'Pending' => {
   switch (s) {
-    case 'PAID':
+    case 'Paid':
       return 'Paid';
-    case 'PARTIAL':
+    case 'Partial':
       return 'Partial';
     default:
       return 'Pending';

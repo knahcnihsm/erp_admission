@@ -59,7 +59,7 @@ export const StudentDetailsStep: React.FC<{ onNext: () => void }> = ({ onNext })
 
   // Determine initial states for custom entries
   const initCaste = draftStudent.personal?.caste || '';
-  const isCustomCaste = initCaste !== '' && !['SC', 'ST', 'OBC', 'OTHERS'].includes(initCaste);
+  const isCustomCaste = initCaste !== '' && !['SC', 'ST', 'OBC', 'Others'].includes(initCaste);
 
   const initNationality = draftStudent.personal?.nationality || '';
   const isCustomNationality = initNationality !== '' && initNationality !== 'Indian';

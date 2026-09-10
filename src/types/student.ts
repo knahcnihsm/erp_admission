@@ -1,5 +1,5 @@
 export type Gender = 'Male' | 'Female' | 'Others';
-export type Caste = 'SC' | 'ST' | 'OBC' | 'OTHERS';
+export type Caste = 'SC' | 'ST' | 'OBC' | 'Others';
 export type Nationality = 'Indian' | 'Other';
 
 export interface StudentPersonalDetails {
@@ -39,7 +39,7 @@ export interface CommunicationDetails {
   sameAsPermanent: boolean;
 }
 
-export type AdmissionCategory = 'CENTAC' | 'MANAGEMENT';
+export type AdmissionCategory = 'Centac' | 'Management';
 export type ProgramType = 'First Year B.Tech' | 'Second Year B.Tech (Lateral Entry)' | 'PG';
 
 export interface AcademicDetails {

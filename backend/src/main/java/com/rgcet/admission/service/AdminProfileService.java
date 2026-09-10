@@ -49,7 +49,7 @@ public class AdminProfileService {
     public AdminProfile getOrCreateDefaultProfile() {
         return profileRepository.findTopByOrderByIdAsc().orElseGet(() -> {
             AdminProfile newProfile = new AdminProfile();
-            newProfile.setAdminName("ADMIN USER");
+            newProfile.setAdminName("Admin User");
             newProfile.setUsername("admin");
             newProfile.setPassword("admin123");
             newProfile.setRole("Administrator");

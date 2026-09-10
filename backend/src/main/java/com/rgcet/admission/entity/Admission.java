@@ -57,6 +57,6 @@ public class Admission {
     @PrePersist
     @PreUpdate
     public void normalizeTextFields() {
-        this.batch = TextUtil.upper(this.batch);
+        this.batch = TextUtil.titleCase(this.batch);
     }
 }

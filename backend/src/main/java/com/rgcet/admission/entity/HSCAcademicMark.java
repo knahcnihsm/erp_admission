@@ -53,7 +53,7 @@ public class HSCAcademicMark {
     @PrePersist
     @PreUpdate
     public void normalizeTextFields() {
-        this.subjectName = TextUtil.upper(this.subjectName);
-        this.monthYear = TextUtil.upper(this.monthYear);
+        this.subjectName = TextUtil.titleCase(this.subjectName);
+        this.monthYear = TextUtil.titleCase(this.monthYear);
     }
 }

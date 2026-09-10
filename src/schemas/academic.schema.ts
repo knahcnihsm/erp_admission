@@ -1,7 +1,7 @@
 import { z } from 'zod';
 
 export const academicDetailsSchema = z.object({
-  admissionCategory: z.enum(['CENTAC', 'MANAGEMENT'], {
+  admissionCategory: z.enum(['Centac', 'Management'], {
     errorMap: () => ({ message: 'Admission Category is required' }),
   }),
   program: z.enum([

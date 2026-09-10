@@ -72,11 +72,11 @@ public class QualifyingExam {
     @PrePersist
     @PreUpdate
     public void normalizeTextFields() {
-        this.institutionName = TextUtil.upper(this.institutionName);
-        this.institutionPlace = TextUtil.upper(this.institutionPlace);
-        this.examPassed = TextUtil.upper(this.examPassed);
-        this.monthYearOfPassing = TextUtil.upper(this.monthYearOfPassing);
-        this.sslcRegistrationNo = TextUtil.upper(this.sslcRegistrationNo);
-        this.hscRegistrationNo = TextUtil.upper(this.hscRegistrationNo);
+        this.institutionName = TextUtil.titleCase(this.institutionName);
+        this.institutionPlace = TextUtil.titleCase(this.institutionPlace);
+        this.examPassed = TextUtil.titleCase(this.examPassed);
+        this.monthYearOfPassing = TextUtil.titleCase(this.monthYearOfPassing);
+        this.sslcRegistrationNo = TextUtil.titleCase(this.sslcRegistrationNo);
+        this.hscRegistrationNo = TextUtil.titleCase(this.hscRegistrationNo);
     }
 }

@@ -375,7 +375,7 @@ class BulkAdmissionServiceTest {
         verify(studentRepository).save(captor.capture());
         Student saved = captor.getValue();
 
-        assertEquals(StudentStatus.ACTIVE, saved.getStatus());
+        assertEquals(StudentStatus.Active, saved.getStatus());
         assertEquals(APP_NO, saved.getApplicationNo());
         assertEquals(REG_NO, saved.getRegisterNo());
         assertEquals("Kavya Krishnan", saved.getStudentName());
@@ -393,7 +393,7 @@ class BulkAdmissionServiceTest {
         assertEquals(0, new BigDecimal("310000").compareTo(saved.getFee().getTotalFee()));
         assertEquals(0, new BigDecimal("50000").compareTo(saved.getFee().getPaidAmount()));
         assertEquals(0, new BigDecimal("260000").compareTo(saved.getFee().getPendingAmount()));
-        assertEquals(PaymentStatus.PARTIAL, saved.getFee().getPaymentStatus());
+        assertEquals(PaymentStatus.Partial, saved.getFee().getPaymentStatus());
         verify(auditLogRepository, atLeastOnce()).save(any());
     }
 
@@ -426,7 +426,8 @@ class BulkAdmissionServiceTest {
         assertEquals(1, result.summary().createdRecords());
         ArgumentCaptor<Student> captor = ArgumentCaptor.forClass(Student.class);
         verify(studentRepository).save(captor.capture());
-        assertEquals(PaymentStatus.PENDING, captor.getValue().getFee().getPaymentStatus());
+        assertEquals(PaymentStatus.Pending, captor.getValue().getFee().getPaymentStatus());
+
         assertEquals(0, new BigDecimal("300000").compareTo(captor.getValue().getFee().getPendingAmount()));
         assertEquals(Boolean.FALSE, captor.getValue().getFee().getBusRequired());
         assertEquals(Boolean.FALSE, captor.getValue().getFee().getHostelRequired());

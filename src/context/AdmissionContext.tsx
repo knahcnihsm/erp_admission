@@ -502,8 +502,9 @@ export const AdmissionProvider: React.FC<{ children: React.ReactNode }> = ({ chi
     try {
       const [activePage, archivedPage] = await Promise.all([
         studentApi.listStudents({ page: 0, size: 1000 }),
-        studentApi.listStudents({ status: 'ARCHIVED', page: 0, size: 1000 }),
+        studentApi.listStudents({ status: 'Archived', page: 0, size: 1000 }),
       ]);
+
       setStudents(activePage.content.map(toStudentRecord));
       setArchivedStudents(archivedPage.content.map(toStudentRecord));
     } catch (e) {

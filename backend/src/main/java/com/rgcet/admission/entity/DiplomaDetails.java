@@ -55,8 +55,8 @@ public class DiplomaDetails {
     @PrePersist
     @PreUpdate
     public void normalizeTextFields() {
-        this.diploma = TextUtil.upper(this.diploma);
-        this.institutionName = TextUtil.upper(this.institutionName);
-        this.board = TextUtil.upper(this.board);
+        this.diploma = TextUtil.titleCase(this.diploma);
+        this.institutionName = TextUtil.titleCase(this.institutionName);
+        this.board = TextUtil.titleCase(this.board);
     }
 }

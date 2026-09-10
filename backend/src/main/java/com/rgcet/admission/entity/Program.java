@@ -35,6 +35,6 @@ public class Program {
     @PrePersist
     @PreUpdate
     public void normalizeTextFields() {
-        this.programName = TextUtil.upper(this.programName);
+        this.programName = TextUtil.titleCase(this.programName);
     }
 }

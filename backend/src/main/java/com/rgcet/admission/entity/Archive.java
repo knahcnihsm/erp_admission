@@ -47,7 +47,7 @@ public class Archive {
     @PrePersist
     @PreUpdate
     public void normalizeTextFields() {
-        this.archiveReason = TextUtil.upper(this.archiveReason);
-        this.description = TextUtil.upper(this.description);
+        this.archiveReason = TextUtil.titleCase(this.archiveReason);
+        this.description = TextUtil.titleCase(this.description);
     }
 }

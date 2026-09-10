@@ -32,6 +32,6 @@ public class AdmissionCategory {
     @PrePersist
     @PreUpdate
     public void normalizeTextFields() {
-        this.categoryName = TextUtil.upper(this.categoryName);
+        this.categoryName = TextUtil.titleCase(this.categoryName);
     }
 }

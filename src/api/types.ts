@@ -1,7 +1,7 @@
-export type Gender = 'MALE' | 'FEMALE' | 'OTHERS';
-export type Caste = 'OBC' | 'SC' | 'ST' | 'OTHERS';
-export type StudentStatus = 'DRAFT' | 'ACTIVE' | 'ARCHIVED';
-export type PaymentStatus = 'PAID' | 'PARTIAL' | 'PENDING';
+export type Gender = 'Male' | 'Female' | 'Others';
+export type Caste = 'OBC' | 'SC' | 'ST' | 'Others';
+export type StudentStatus = 'Draft' | 'Active' | 'Archived';
+export type PaymentStatus = 'Paid' | 'Partial' | 'Pending';
 
 export interface PersonalStepRequest {
   applicationNumber: string;

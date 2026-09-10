@@ -47,6 +47,6 @@ public class BusStop {
     @PrePersist
     @PreUpdate
     public void normalizeTextFields() {
-        this.stopName = TextUtil.upper(this.stopName);
+        this.stopName = TextUtil.titleCase(this.stopName);
     }
 }

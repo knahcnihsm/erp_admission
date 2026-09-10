@@ -49,8 +49,8 @@ public class ParentDetails {
     @PrePersist
     @PreUpdate
     public void normalizeTextFields() {
-        this.fatherName = TextUtil.upper(this.fatherName);
-        this.fatherMobileNo = TextUtil.upper(this.fatherMobileNo);
-        this.fatherOccupation = TextUtil.upper(this.fatherOccupation);
+        this.fatherName = TextUtil.titleCase(this.fatherName);
+        this.fatherMobileNo = TextUtil.titleCase(this.fatherMobileNo);
+        this.fatherOccupation = TextUtil.titleCase(this.fatherOccupation);
     }
 }

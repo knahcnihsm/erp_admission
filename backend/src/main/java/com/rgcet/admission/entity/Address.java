@@ -60,10 +60,10 @@ public class Address {
     @PrePersist
     @PreUpdate
     public void normalizeTextFields() {
-        this.addressLine = TextUtil.upper(this.addressLine);
-        this.pincode = TextUtil.upper(this.pincode);
-        this.phone = TextUtil.upper(this.phone);
-        this.mobile = TextUtil.upper(this.mobile);
-        this.email = TextUtil.upper(this.email);
+        this.addressLine = TextUtil.titleCase(this.addressLine);
+        this.pincode = TextUtil.titleCase(this.pincode);
+        this.phone = TextUtil.titleCase(this.phone);
+        this.mobile = TextUtil.titleCase(this.mobile);
+        this.email = TextUtil.titleCase(this.email);
     }
 }

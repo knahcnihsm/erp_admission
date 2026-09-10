@@ -21,9 +21,19 @@ import urllib.request
 import urllib.error
 import webbrowser
 
-# Enable ANSI color escape sequences on Windows
+# Enable ANSI color escape sequences on Windows & reconfigure UTF-8 encoding
 if sys.platform == "win32":
     os.system("")
+if hasattr(sys.stdout, "reconfigure"):
+    try:
+        sys.stdout.reconfigure(encoding="utf-8", errors="replace")
+    except Exception:
+        pass
+if hasattr(sys.stderr, "reconfigure"):
+    try:
+        sys.stderr.reconfigure(encoding="utf-8", errors="replace")
+    except Exception:
+        pass
 
 # Styling tokens for formatted output
 class Colors:
@@ -38,14 +48,18 @@ class Colors:
 def print_status(message: str, level: str = "info"):
     """Prints a styled status message to the terminal."""
     icons = {
-        "success": f"{Colors.GREEN}✓{Colors.RESET}",
-        "info": f"{Colors.CYAN}ℹ{Colors.RESET}",
-        "warning": f"{Colors.YELLOW}⚠{Colors.RESET}",
-        "error": f"{Colors.RED}✗{Colors.RESET}",
-        "working": f"{Colors.BLUE}⚡{Colors.RESET}",
+        "success": f"{Colors.GREEN}[OK]{Colors.RESET}",
+        "info": f"{Colors.CYAN}[INFO]{Colors.RESET}",
+        "warning": f"{Colors.YELLOW}[WARN]{Colors.RESET}",
+        "error": f"{Colors.RED}[ERR]{Colors.RESET}",
+        "working": f"{Colors.BLUE}[...]{Colors.RESET}",
     }
-    prefix = icons.get(level, "•")
-    print(f"{prefix} {Colors.BOLD}{message}{Colors.RESET}")
+    prefix = icons.get(level, "*")
+    try:
+        print(f"{prefix} {Colors.BOLD}{message}{Colors.RESET}")
+    except UnicodeEncodeError:
+        print(f"[{level.upper()}] {message}")
+
 
 def is_cmd_available(cmd_name: str) -> bool:
     """Checks if a command is available on the system PATH."""
@@ -77,6 +91,69 @@ def stream_logs(process: subprocess.Popen, prefix: str, color: str):
                 print(f"{color}[{prefix}]{Colors.RESET} {line.rstrip()}")
     except (ValueError, Exception):
         pass
+
+def get_pids_using_port(port: int) -> list[int]:
+    """Finds PIDs listening on a given port."""
+    pids = set()
+    if sys.platform == "win32":
+        try:
+            output = subprocess.check_output("netstat -ano -p tcp", shell=True, text=True, stderr=subprocess.DEVNULL)
+            for line in output.splitlines():
+                parts = line.strip().split()
+                if len(parts) >= 5 and parts[0].upper() == "TCP":
+                    local_addr = parts[1]
+                    state = parts[3].upper()
+                    pid = parts[4]
+                    if local_addr.endswith(f":{port}") and state == "LISTENING":
+                        try:
+                            pids.add(int(pid))
+                        except ValueError:
+                            pass
+        except Exception:
+            pass
+    else:
+        try:
+            output = subprocess.check_output(["lsof", "-ti", f":{port}"], text=True, stderr=subprocess.DEVNULL)
+            for line in output.splitlines():
+                line = line.strip()
+                if line.isdigit():
+                    pids.add(int(line))
+        except Exception:
+            pass
+    return list(pids)
+
+def free_port(port: int, service_name: str = "Service"):
+    """Frees a port if it is currently in use by an existing process."""
+    pids = get_pids_using_port(port)
+    for pid in pids:
+        if pid == os.getpid():
+            continue
+        print_status(f"Port {port} ({service_name}) is occupied by PID {pid}. Freeing port...", "warning")
+        try:
+            if sys.platform == "win32":
+                subprocess.run(f"taskkill /F /T /PID {pid}", shell=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+            else:
+                import signal
+                os.kill(pid, signal.SIGKILL)
+        except Exception:
+            pass
+    if pids:
+        time.sleep(1)
+
+def kill_process_tree(proc: subprocess.Popen):
+    """Cleanly terminates a subprocess and all its children."""
+    if proc and proc.poll() is None:
+        try:
+            if sys.platform == "win32":
+                subprocess.run(f"taskkill /F /T /PID {proc.pid}", shell=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+            else:
+                proc.terminate()
+                proc.wait(timeout=3)
+        except Exception:
+            try:
+                proc.kill()
+            except Exception:
+                pass
 
 def wait_for_url(url: str, timeout_seconds: int = 60, interval_seconds: float = 1.0) -> bool:
     """Polls a URL until it responds with HTTP 200/300/400 (indicating server is active)."""
@@ -172,11 +249,14 @@ def main():
             sys.exit(1)
 
     # 4. Backend Process Launch
+    free_port(8080, "Backend")
     print_status("Starting Backend (Spring Boot)...", "working")
     mvn_exec = get_executable(mvn_cmd)
     
     backend_args = [mvn_exec, "spring-boot:run"]
     
+    backend_proc = None
+    frontend_proc = None
     try:
         backend_proc = subprocess.Popen(
             backend_args,
@@ -206,12 +286,14 @@ def main():
 
     if not backend_ready and backend_proc.poll() is not None:
         print_status("Backend process exited prematurely. Check logs above.", "error")
+        kill_process_tree(backend_proc)
         input("\nPress Enter to exit...")
         sys.exit(1)
 
     print_status("Backend Running (http://localhost:8080)", "success")
 
     # 5. Frontend Process Launch
+    free_port(5173, "Frontend")
     print_status("Starting Frontend (Vite)...", "working")
     npm_exec = get_executable("npm")
     
@@ -226,7 +308,7 @@ def main():
         )
     except Exception as e:
         print_status(f"Failed to launch frontend process: {e}", "error")
-        backend_proc.terminate()
+        kill_process_tree(backend_proc)
         input("\nPress Enter to exit...")
         sys.exit(1)
 
@@ -264,23 +346,17 @@ def main():
         while True:
             time.sleep(1)
             # If both processes exit, stop monitoring
-            if backend_proc.poll() is not None and frontend_proc.poll() is not None:
+            if backend_proc and backend_proc.poll() is not None and frontend_proc and frontend_proc.poll() is not None:
                 print_status("Both backend and frontend processes have stopped.", "warning")
                 break
     except KeyboardInterrupt:
         print(f"\n{Colors.YELLOW}Shutting down Academic ERP services...{Colors.RESET}")
     finally:
-        # Clean shutdown of both processes
-        for proc, name in [(backend_proc, "Backend"), (frontend_proc, "Frontend")]:
-            if proc and proc.poll() is None:
-                try:
-                    proc.terminate()
-                    proc.wait(timeout=3)
-                except Exception:
-                    try:
-                        proc.kill()
-                    except Exception:
-                        pass
+        # Clean shutdown of both processes and their children
+        if backend_proc:
+            kill_process_tree(backend_proc)
+        if frontend_proc:
+            kill_process_tree(frontend_proc)
         print_status("All services stopped successfully.", "info")
 
 if __name__ == "__main__":

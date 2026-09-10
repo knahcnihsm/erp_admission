@@ -77,7 +77,7 @@ public class Student {
 
     @Enumerated(EnumType.STRING)
     @Column(name = "status", nullable = false)
-    private StudentStatus status = StudentStatus.DRAFT;
+    private StudentStatus status = StudentStatus.Draft;
 
     @Column(name = "created_at")
     private LocalDateTime createdAt;
@@ -118,14 +118,14 @@ public class Student {
     @PrePersist
     @PreUpdate
     public void normalizeTextFields() {
-        this.applicationNo = TextUtil.upper(this.applicationNo);
-        this.registerNo = TextUtil.upper(this.registerNo);
-        this.studentName = TextUtil.upper(this.studentName);
-        this.aadhaarNo = TextUtil.upper(this.aadhaarNo);
-        this.mobileNumber = TextUtil.upper(this.mobileNumber);
-        this.emailId = TextUtil.upper(this.emailId);
-        this.district = TextUtil.upper(this.district);
-        this.nationality = TextUtil.upper(this.nationality);
-        this.archiveReason = TextUtil.upper(this.archiveReason);
+        this.applicationNo = TextUtil.titleCase(this.applicationNo);
+        this.registerNo = TextUtil.titleCase(this.registerNo);
+        this.studentName = TextUtil.titleCase(this.studentName);
+        this.aadhaarNo = TextUtil.titleCase(this.aadhaarNo);
+        this.mobileNumber = TextUtil.titleCase(this.mobileNumber);
+        this.emailId = TextUtil.titleCase(this.emailId);
+        this.district = TextUtil.titleCase(this.district);
+        this.nationality = TextUtil.titleCase(this.nationality);
+        this.archiveReason = TextUtil.titleCase(this.archiveReason);
     }
 }

@@ -32,6 +32,6 @@ public class Department {
     @PrePersist
     @PreUpdate
     public void normalizeTextFields() {
-        this.departmentName = TextUtil.upper(this.departmentName);
+        this.departmentName = TextUtil.titleCase(this.departmentName);
     }
 }

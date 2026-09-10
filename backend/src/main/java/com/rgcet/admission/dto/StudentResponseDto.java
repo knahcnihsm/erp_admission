@@ -113,8 +113,8 @@ public record StudentResponseDto(
             Address perm = null;
             Address comm = null;
             for (Address a : s.getAddresses()) {
-                if (a.getAddressType() == AddressType.PERMANENT) perm = a;
-                else if (a.getAddressType() == AddressType.COMMUNICATION) comm = a;
+                if (a.getAddressType() == AddressType.Permanent) perm = a;
+                else if (a.getAddressType() == AddressType.Communication) comm = a;
             }
             boolean same = perm != null && Boolean.TRUE.equals(perm.getSameAsPermanent());
             return new CommunicationDto(AddressDto.from(perm), AddressDto.from(comm), same);

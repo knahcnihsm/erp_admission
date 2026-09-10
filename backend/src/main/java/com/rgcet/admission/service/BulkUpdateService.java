@@ -1,5 +1,6 @@
 package com.rgcet.admission.service;
 
+import com.rgcet.admission.common.TextUtil;
 import com.rgcet.admission.dto.BulkUpdateDtos.ApplySummaryDto;
 import com.rgcet.admission.dto.BulkUpdateDtos.BulkUpdateApplyResponse;
 import com.rgcet.admission.dto.BulkUpdateDtos.BulkUpdatePreviewResponse;
@@ -51,6 +52,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
+import java.util.Arrays;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -204,7 +206,7 @@ public class BulkUpdateService {
                 continue;
             }
             Student student = maybeStudent.get();
-            if (student.getStatus() == StudentStatus.ARCHIVED) {
+            if (student.getStatus() == StudentStatus.Archived) {
                 outcome.errors.add("Archived students cannot be updated: " + appNo);
             }
             outcome.studentName = student.getStudentName();
@@ -784,15 +786,26 @@ public class BulkUpdateService {
             case "student_name" -> student.setStudentName(value);
             case "date_of_birth" -> student.setDateOfBirth(LocalDate.parse(value));
             case "aadhaar_no" -> student.setAadhaarNo(value);
-            case "gender" -> student.setGender(Gender.valueOf(value));
+            case "gender" -> student.setGender(enumOf(Gender.class, value));
             case "district" -> student.setDistrict(value);
             case "nationality" -> student.setNationality(value);
-            case "caste" -> student.setCaste(Caste.valueOf(value));
+            case "caste" -> student.setCaste(enumOf(Caste.class, value));
             case "mobile_number" -> student.setMobileNumber(value);
             case "email_id" -> student.setEmailId(value != null ? value.trim() : null);
             default -> { /* no-op */ }
         }
     }
+
+    private static <E extends Enum<E>> E enumOf(Class<E> type, String value) {
+        if (isBlank(value)) {
+            return null;
+        }
+        return java.util.Arrays.stream(type.getEnumConstants())
+                .filter(e -> e.name().equalsIgnoreCase(value.trim()))
+                .findFirst()
+                .orElse(null);
+    }
+
 
     private void applyParent(Student student, String column, String value) {
         ParentDetails parent = getOrCreateParent(student);
@@ -1053,7 +1066,10 @@ public class BulkUpdateService {
     private static AddressType addressTypeOf(Row row) {
         String type = row.values.get("address_type");
         try {
-            return type == null ? null : AddressType.valueOf(type.toUpperCase());
+            return Arrays.stream(AddressType.values())
+                    .filter(a -> a.name().equalsIgnoreCase(type.trim()))
+                    .findFirst()
+                    .orElse(null);
         } catch (IllegalArgumentException e) {
             return null;
         }
@@ -1093,7 +1109,7 @@ public class BulkUpdateService {
 
     private static String subjectOf(Row row) {
         String s = row.values.get("subject_name");
-        return isBlank(s) ? null : s.trim().toUpperCase();
+        return isBlank(s) ? null : TextUtil.titleCase(s);
     }
 
     private HSCAcademicMark findHscAcademic(QualifyingExam exam, String subject) {

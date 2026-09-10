@@ -62,7 +62,7 @@ public class DataSeeder implements CommandLineRunner {
     }
 
     private static String norm(String value) {
-        return value == null ? null : value.toUpperCase();
+        return value == null ? null : com.rgcet.admission.common.TextUtil.titleCase(value);
     }
 
     @Override
@@ -78,7 +78,7 @@ public class DataSeeder implements CommandLineRunner {
     }
 
     private void seed() {
-        AdmissionCategory centac = saveCategory("CENTAC");
+        AdmissionCategory centac = saveCategory("Centac");
         AdmissionCategory management = saveCategory("Management");
 
         Map<String, Program> programs = new LinkedHashMap<>();
@@ -112,7 +112,7 @@ public class DataSeeder implements CommandLineRunner {
         if (studentRepository.count() >= 10) {
             return;
         }
-        AdmissionCategory centac = categoryRepository.findByCategoryNameIgnoreCase("CENTAC").orElse(null);
+        AdmissionCategory centac = categoryRepository.findByCategoryNameIgnoreCase("Centac").orElse(null);
         AdmissionCategory management = categoryRepository.findByCategoryNameIgnoreCase("Management").orElse(null);
         Program btechProgram = programRepository.findByProgramNameIgnoreCase("First Year B.Tech").orElse(null);
         if (centac != null && management != null && btechProgram != null) {
@@ -137,12 +137,12 @@ public class DataSeeder implements CommandLineRunner {
                 "Priya Sundaram", "Vikramaditya Reddy", "Sneha Venkatesh", "Karthik Nair", "Divya Iyer"
         };
         Gender[] genders = {
-                Gender.MALE, Gender.FEMALE, Gender.MALE, Gender.FEMALE, Gender.MALE,
-                Gender.FEMALE, Gender.MALE, Gender.FEMALE, Gender.MALE, Gender.FEMALE
+                Gender.Male, Gender.Female, Gender.Male, Gender.Female, Gender.Male,
+                Gender.Female, Gender.Male, Gender.Female, Gender.Male, Gender.Female
         };
         Caste[] castes = {
-                Caste.OBC, Caste.OTHERS, Caste.OBC, Caste.SC, Caste.OTHERS,
-                Caste.OBC, Caste.OTHERS, Caste.OBC, Caste.OBC, Caste.OTHERS
+                Caste.OBC, Caste.Others, Caste.OBC, Caste.SC, Caste.Others,
+                Caste.OBC, Caste.Others, Caste.OBC, Caste.OBC, Caste.Others
         };
         String[] deptNames = {
                 "Computer Science & Engineering (CSE)",
@@ -181,7 +181,7 @@ public class DataSeeder implements CommandLineRunner {
             s.setDistrict("Puducherry");
             s.setNationality("Indian");
             s.setCaste(castes[i]);
-            s.setStatus(StudentStatus.ACTIVE);
+            s.setStatus(StudentStatus.Active);
             s.setCreatedAt(now.minusDays(10 - i));
             s.setUpdatedAt(now.minusDays(10 - i));
 
@@ -193,7 +193,7 @@ public class DataSeeder implements CommandLineRunner {
 
             Address perm = new Address();
             perm.setStudent(s);
-            perm.setAddressType(AddressType.PERMANENT);
+            perm.setAddressType(AddressType.Permanent);
             perm.setMobile("950000000" + i);
             perm.setEmail("student" + (i + 1) + "@example.com");
             perm.setAddressLine("123 Sample Street, Puducherry");
@@ -202,7 +202,7 @@ public class DataSeeder implements CommandLineRunner {
 
             Address comm = new Address();
             comm.setStudent(s);
-            comm.setAddressType(AddressType.COMMUNICATION);
+            comm.setAddressType(AddressType.Communication);
             comm.setMobile("950000000" + i);
             comm.setEmail("student" + (i + 1) + "@example.com");
             comm.setAddressLine("123 Sample Street, Puducherry");
@@ -238,18 +238,18 @@ public class DataSeeder implements CommandLineRunner {
         btech.values().forEach(dept -> addFee(firstYear, dept, centac, 0, 100, 75000));
 
         // First Year B.Tech - Management: slabs for CSE & AI&DS, flat for others
-        addFee(firstYear, btech.get("COMPUTER SCIENCE & ENGINEERING (CSE)"), management, 0, 60, 100000);
-        addFee(firstYear, btech.get("COMPUTER SCIENCE & ENGINEERING (CSE)"), management, 60, 80, 90000);
-        addFee(firstYear, btech.get("COMPUTER SCIENCE & ENGINEERING (CSE)"), management, 80, 100, 80000);
+        addFee(firstYear, btech.get(norm("Computer Science & Engineering (CSE)")), management, 0, 60, 100000);
+        addFee(firstYear, btech.get(norm("Computer Science & Engineering (CSE)")), management, 60, 80, 90000);
+        addFee(firstYear, btech.get(norm("Computer Science & Engineering (CSE)")), management, 80, 100, 80000);
 
-        addFee(firstYear, btech.get("ARTIFICIAL INTELLIGENCE AND DATA SCIENCE (AI&DS)"), management, 0, 60, 100000);
-        addFee(firstYear, btech.get("ARTIFICIAL INTELLIGENCE AND DATA SCIENCE (AI&DS)"), management, 60, 80, 90000);
-        addFee(firstYear, btech.get("ARTIFICIAL INTELLIGENCE AND DATA SCIENCE (AI&DS)"), management, 80, 100, 80000);
+        addFee(firstYear, btech.get(norm("Artificial Intelligence and Data Science (AI&DS)")), management, 0, 60, 100000);
+        addFee(firstYear, btech.get(norm("Artificial Intelligence and Data Science (AI&DS)")), management, 60, 80, 90000);
+        addFee(firstYear, btech.get(norm("Artificial Intelligence and Data Science (AI&DS)")), management, 80, 100, 80000);
 
-        addFee(firstYear, btech.get("INFORMATION TECHNOLOGY (IT)"), management, 0, 100, 80000);
-        addFee(firstYear, btech.get("ARTIFICIAL INTELLIGENCE AND MACHINE LEARNING (AI&ML)"), management, 0, 100, 80000);
-        addFee(firstYear, btech.get("ELECTRONICS & COMMUNICATION ENGINEERING (ECE)"), management, 0, 100, 80000);
-        addFee(firstYear, btech.get("BIOMEDICAL ENGINEERING (BME)"), management, 0, 100, 70000);
+        addFee(firstYear, btech.get(norm("Information Technology (IT)")), management, 0, 100, 80000);
+        addFee(firstYear, btech.get(norm("Artificial Intelligence and Machine Learning (AI&ML)")), management, 0, 100, 80000);
+        addFee(firstYear, btech.get(norm("Electronics & Communication Engineering (ECE)")), management, 0, 100, 80000);
+        addFee(firstYear, btech.get(norm("Biomedical Engineering (BME)")), management, 0, 100, 70000);
 
         // Lateral B.Tech: 50,000 for both quotas
         btech.values().forEach(dept -> {
@@ -258,18 +258,18 @@ public class DataSeeder implements CommandLineRunner {
         });
 
         // PG: M.Tech CSE / M.Tech WC / MCA = 50,000 both quotas
-        addFee(pgProgram, pg.get("M.TECH COMPUTER SCIENCE & ENGINEERING"), centac, 0, 100, 50000);
-        addFee(pgProgram, pg.get("M.TECH COMPUTER SCIENCE & ENGINEERING"), management, 0, 100, 50000);
-        addFee(pgProgram, pg.get("M.TECH WIRELESS COMMUNICATION"), centac, 0, 100, 50000);
-        addFee(pgProgram, pg.get("M.TECH WIRELESS COMMUNICATION"), management, 0, 100, 50000);
-        addFee(pgProgram, pg.get("MASTER OF COMPUTER APPLICATIONS"), centac, 0, 100, 50000);
-        addFee(pgProgram, pg.get("MASTER OF COMPUTER APPLICATIONS"), management, 0, 100, 50000);
+        addFee(pgProgram, pg.get(norm("M.Tech Computer Science & Engineering")), centac, 0, 100, 50000);
+        addFee(pgProgram, pg.get(norm("M.Tech Computer Science & Engineering")), management, 0, 100, 50000);
+        addFee(pgProgram, pg.get(norm("M.Tech Wireless Communication")), centac, 0, 100, 50000);
+        addFee(pgProgram, pg.get(norm("M.Tech Wireless Communication")), management, 0, 100, 50000);
+        addFee(pgProgram, pg.get(norm("Master of Computer Applications")), centac, 0, 100, 50000);
+        addFee(pgProgram, pg.get(norm("Master of Computer Applications")), management, 0, 100, 50000);
 
         // PG MBA: CENTAC flat 70,000; Management slabs
-        addFee(pgProgram, pg.get("MASTER OF BUSINESS ADMINISTRATION"), centac, 0, 100, 70000);
-        addFee(pgProgram, pg.get("MASTER OF BUSINESS ADMINISTRATION"), management, 0, 60, 100000);
-        addFee(pgProgram, pg.get("MASTER OF BUSINESS ADMINISTRATION"), management, 60, 80, 90000);
-        addFee(pgProgram, pg.get("MASTER OF BUSINESS ADMINISTRATION"), management, 80, 100, 80000);
+        addFee(pgProgram, pg.get(norm("Master of Business Administration")), centac, 0, 100, 70000);
+        addFee(pgProgram, pg.get(norm("Master of Business Administration")), management, 0, 60, 100000);
+        addFee(pgProgram, pg.get(norm("Master of Business Administration")), management, 60, 80, 90000);
+        addFee(pgProgram, pg.get(norm("Master of Business Administration")), management, 80, 100, 80000);
     }
 
     private void addFee(Program program, Department department, AdmissionCategory category,
@@ -291,7 +291,7 @@ public class DataSeeder implements CommandLineRunner {
      * preserved.
      */
     private void ensureFeeConfiguration() {
-        AdmissionCategory centac = categoryRepository.findByCategoryNameIgnoreCase("CENTAC").orElse(null);
+        AdmissionCategory centac = categoryRepository.findByCategoryNameIgnoreCase("Centac").orElse(null);
         AdmissionCategory management = categoryRepository.findByCategoryNameIgnoreCase("Management").orElse(null);
         if (centac == null || management == null) {
             return;
@@ -306,7 +306,7 @@ public class DataSeeder implements CommandLineRunner {
         Map<String, Department> pg = new LinkedHashMap<>();
         departmentRepository.findAll().forEach(d -> {
             String name = norm(d.getDepartmentName());
-            if (name != null && (name.startsWith("M.TECH") || name.startsWith("MASTER OF"))) {
+            if (name != null && (name.startsWith("M.Tech") || name.startsWith("Master of") || name.startsWith("M.TECH") || name.startsWith("MASTER OF"))) {
                 pg.put(name, d);
             } else {
                 btech.put(name, d);
@@ -325,38 +325,38 @@ public class DataSeeder implements CommandLineRunner {
             btech.values().forEach(dept -> addBaseFeeIfMissing(lateral, dept, centac, 50000));
         }
         if (pgProgram != null) {
-            addBaseFeeIfMissing(pgProgram, pg.get("M.TECH COMPUTER SCIENCE & ENGINEERING"), centac, 50000);
-            addBaseFeeIfMissing(pgProgram, pg.get("M.TECH WIRELESS COMMUNICATION"), centac, 50000);
-            addBaseFeeIfMissing(pgProgram, pg.get("MASTER OF COMPUTER APPLICATIONS"), centac, 50000);
-            addBaseFeeIfMissing(pgProgram, pg.get("MASTER OF BUSINESS ADMINISTRATION"), centac, 70000);
+            addBaseFeeIfMissing(pgProgram, pg.get(norm("M.Tech Computer Science & Engineering")), centac, 50000);
+            addBaseFeeIfMissing(pgProgram, pg.get(norm("M.Tech Wireless Communication")), centac, 50000);
+            addBaseFeeIfMissing(pgProgram, pg.get(norm("Master of Computer Applications")), centac, 50000);
+            addBaseFeeIfMissing(pgProgram, pg.get(norm("Master of Business Administration")), centac, 70000);
         }
 
         // Original (base) fee per year - Management quota
         if (firstYear != null) {
-            addBaseFeeIfMissing(firstYear, btech.get("COMPUTER SCIENCE & ENGINEERING (CSE)"), management, 100000);
-            addBaseFeeIfMissing(firstYear, btech.get("ARTIFICIAL INTELLIGENCE AND DATA SCIENCE (AI&DS)"), management, 100000);
-            addBaseFeeIfMissing(firstYear, btech.get("INFORMATION TECHNOLOGY (IT)"), management, 80000);
-            addBaseFeeIfMissing(firstYear, btech.get("ARTIFICIAL INTELLIGENCE AND MACHINE LEARNING (AI&ML)"), management, 80000);
-            addBaseFeeIfMissing(firstYear, btech.get("ELECTRONICS & COMMUNICATION ENGINEERING (ECE)"), management, 80000);
-            addBaseFeeIfMissing(firstYear, btech.get("BIOMEDICAL ENGINEERING (BME)"), management, 70000);
+            addBaseFeeIfMissing(firstYear, btech.get(norm("Computer Science & Engineering (CSE)")), management, 100000);
+            addBaseFeeIfMissing(firstYear, btech.get(norm("Artificial Intelligence and Data Science (AI&DS)")), management, 100000);
+            addBaseFeeIfMissing(firstYear, btech.get(norm("Information Technology (IT)")), management, 80000);
+            addBaseFeeIfMissing(firstYear, btech.get(norm("Artificial Intelligence and Machine Learning (AI&ML)")), management, 80000);
+            addBaseFeeIfMissing(firstYear, btech.get(norm("Electronics & Communication Engineering (ECE)")), management, 80000);
+            addBaseFeeIfMissing(firstYear, btech.get(norm("Biomedical Engineering (BME)")), management, 70000);
         }
         if (lateral != null) {
             btech.values().forEach(dept -> addBaseFeeIfMissing(lateral, dept, management, 50000));
         }
         if (pgProgram != null) {
-            addBaseFeeIfMissing(pgProgram, pg.get("M.TECH COMPUTER SCIENCE & ENGINEERING"), management, 50000);
-            addBaseFeeIfMissing(pgProgram, pg.get("M.TECH WIRELESS COMMUNICATION"), management, 50000);
-            addBaseFeeIfMissing(pgProgram, pg.get("MASTER OF COMPUTER APPLICATIONS"), management, 50000);
-            addBaseFeeIfMissing(pgProgram, pg.get("MASTER OF BUSINESS ADMINISTRATION"), management, 100000);
+            addBaseFeeIfMissing(pgProgram, pg.get(norm("M.Tech Computer Science & Engineering")), management, 50000);
+            addBaseFeeIfMissing(pgProgram, pg.get(norm("M.Tech Wireless Communication")), management, 50000);
+            addBaseFeeIfMissing(pgProgram, pg.get(norm("Master of Computer Applications")), management, 50000);
+            addBaseFeeIfMissing(pgProgram, pg.get(norm("Master of Business Administration")), management, 100000);
         }
 
         // Merit scholarship slabs - Management quota (eligible: B.Tech CSE, B.Tech AI&DS, MBA)
         if (firstYear != null) {
-            addScholarshipIfMissing(firstYear, btech.get("COMPUTER SCIENCE & ENGINEERING (CSE)"), management);
-            addScholarshipIfMissing(firstYear, btech.get("ARTIFICIAL INTELLIGENCE AND DATA SCIENCE (AI&DS)"), management);
+            addScholarshipIfMissing(firstYear, btech.get(norm("Computer Science & Engineering (CSE)")), management);
+            addScholarshipIfMissing(firstYear, btech.get(norm("Artificial Intelligence and Data Science (AI&DS)")), management);
         }
         if (pgProgram != null) {
-            addScholarshipIfMissing(pgProgram, pg.get("MASTER OF BUSINESS ADMINISTRATION"), management);
+            addScholarshipIfMissing(pgProgram, pg.get(norm("Master of Business Administration")), management);
         }
     }
 
@@ -364,11 +364,11 @@ public class DataSeeder implements CommandLineRunner {
                                            Map<String, Program> programs, Map<String, Department> btech,
                                            Map<String, Department> pg) {
         addScholarshipIfMissing(programs.get("B.Tech"),
-                btech.get("COMPUTER SCIENCE & ENGINEERING (CSE)"), management);
+                btech.get(norm("Computer Science & Engineering (CSE)")), management);
         addScholarshipIfMissing(programs.get("B.Tech"),
-                btech.get("ARTIFICIAL INTELLIGENCE AND DATA SCIENCE (AI&DS)"), management);
+                btech.get(norm("Artificial Intelligence and Data Science (AI&DS)")), management);
         addScholarshipIfMissing(programs.get("PG"),
-                pg.get("MASTER OF BUSINESS ADMINISTRATION"), management);
+                pg.get(norm("Master of Business Administration")), management);
     }
 
     private void addBaseFeeIfMissing(Program program, Department department,
